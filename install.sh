@@ -22,16 +22,16 @@
 # Set to true if you do *NOT* want Magisk to mount
 # any files for you. Most modules would NOT want
 # to set this flag to true
-SKIPMOUNT=false
+SKIPMOUNT=true
 
 # Set to true if you need to load system.prop
-PROPFILE=false
+PROPFILE=true
 
 # Set to true if you need post-fs-data script
-POSTFSDATA=false
+POSTFSDATA=true
 
 # Set to true if you need late_start service script
-LATESTARTSERVICE=false
+LATESTARTSERVICE=true
 
 ##########################################################################################
 # Replace list
@@ -123,18 +123,28 @@ REPLACE="
 
 print_modname() {
   ui_print "*******************************"
-  ui_print "     Magisk Module Template    "
+  ui_print "     Magisk Module Pytovskiy Call Recorder    "
   ui_print "*******************************"
 }
 
 # Copy/extract your module files into $MODPATH in on_install.
 
 on_install() {
-  # The following is the default implementation: extract $ZIPFILE/system to $MODPATH
-  # Extend/change the logic to whatever you want
-  ui_print "- Extracting module files"
-  unzip -o "$ZIPFILE" 'system/*' -d $MODPATH >&2
-}
+  if [ "$BOOTMODE" != 'true' ]; then
+      ui_print '- Skipping APK installation since not running via Magisk Manager'
+      return 0
+    fi
+
+    ui_print '- Installing CallRecorder APK'
+    pm install -r "$MODPATH/system/priv-app/com.github.axet.callrecorder/com.github.axet.callrecorder_219.apk" || true
+  }
+
+
+  if [ "$API" -lt '19' ]; then
+    abort 'This module is for Android 4.4+ only'
+  fi
+
+  install_apk
 
 # Only some special files require specific permissions
 # This function will be called after on_install is done
